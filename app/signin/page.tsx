@@ -3,6 +3,7 @@ import { useEffect } from "react";
 import { authClient } from "@/lib/auth/client";
 import Image from "next/image";
 
+// test
 export default function LoginPage() {
   const { data } = authClient.useSession();
 
