@@ -35,7 +35,7 @@ export default function LoginPage() {
 
         { }
         <div className="space-y-4">
-          <input
+          {/* <input
             type="email"
             placeholder="Your Email"
             className="w-full text-black rounded-lg border border-gray-300 px-4 py-3 text-sm focus:border-[#319795] focus:outline-none placeholder-gray-500" />
@@ -43,7 +43,7 @@ export default function LoginPage() {
             type="password"
             placeholder="Password"
             className="w-full text-black rounded-lg border border-gray-300 px-4 py-3 text-sm focus:border-[#319795] focus:outline-none placeholder-gray-500" />
-          { }
+          { } */}
           {/* type="submit" */}
           <button
 
@@ -59,11 +59,11 @@ export default function LoginPage() {
         </div>
 
         { }
-        <div className="mt-4 text-center">
+        {/* <div className="mt-4 text-center">
           <a href="#" className="text-sm text-[#3182CE] hover:underline">
             Forgot password?
           </a>
-        </div>
+        </div> */}
       </div>
     </div>
   );
