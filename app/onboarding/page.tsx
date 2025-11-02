@@ -45,7 +45,7 @@ useEffect(() => {
               placeholder="Search schools"
               className="w-full text-black rounded-lg border border-gray-500 px-4 py-3 text-sm focus:border-[#319795] focus:outline-none bg-white placeholder-gray-500"
             />
-            <datalist id="school-list">
+            <datalist id="school-list" data-testid="school-list">
                 <option value="Wayne State University"/>
             </datalist>
 
