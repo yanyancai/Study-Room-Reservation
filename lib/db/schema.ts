@@ -1,6 +1,8 @@
+import { relations } from "drizzle-orm";
 import {
 	boolean,
 	integer,
+	pgEnum,
 	pgTable,
 	serial,
 	text,
@@ -86,7 +88,21 @@ export const rooms = pgTable("rooms", {
 		.references(() => buildings.id, { onDelete: "cascade" }),
 });
 
+export const roomsRelations = relations(rooms, ({ one }) => ({
+	building: one(buildings, {
+		fields: [rooms.buildingId],
+		references: [buildings.id],
+	}),
+}));
+
 export type Room = typeof rooms.$inferSelect;
+
+export const statusEnum = pgEnum("reservation_status", [
+	"confirmed",
+	"cancelled",
+]);
+
+export type ReservationStatus = (typeof statusEnum.enumValues)[number];
 
 export const reservations = pgTable("reservations", {
 	id: serial("id").primaryKey(),
@@ -99,9 +115,27 @@ export const reservations = pgTable("reservations", {
 	name: text("name").notNull(),
 	description: text("description"),
 	inviteCode: text("invite_code").notNull().unique(),
+	status: statusEnum("status").default("confirmed").notNull(),
 	startTime: timestamp("start_time").notNull(),
 	endTime: timestamp("end_time").notNull(),
 	createdAt: timestamp("created_at").defaultNow().notNull(),
 });
 
+export const usersRelations = relations(users, ({ many }) => ({
+	reservations: many(reservations),
+}));
+
+export const reservationsRelations = relations(reservations, ({ one }) => ({
+	room: one(rooms, { fields: [reservations.roomId], references: [rooms.id] }),
+	user: one(users, { fields: [reservations.userId], references: [users.id] }),
+}));
+
 export type Reservation = typeof reservations.$inferSelect;
+
+export interface FullRoom extends Room {
+	building: Building;
+}
+
+export interface FullReservation extends Reservation {
+	room: FullRoom;
+}

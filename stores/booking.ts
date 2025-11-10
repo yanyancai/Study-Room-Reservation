@@ -38,12 +38,24 @@ const defaultState: BookingState = {
 	inviteCode: null,
 };
 
-export const useBooking = create<BookingStore>((set) => ({
+export const useBooking = create<BookingStore>((set, get) => ({
 	...defaultState,
 	setStep: (step) => set({ step }),
 	setLocation: (building, room) => set({ building, room }),
 	setStart: (start) => set({ start }),
-	setEnd: (end) => set({ end }),
+	setEnd: (end) => {
+		const start = get().start;
+
+		if (!start) {
+			throw new Error("Start date must be set before setting end date.");
+		}
+
+		if (end.getTime() < start.getTime()) {
+			throw new Error("End date cannot be before start date.");
+		}
+
+		set({ end });
+	},
 	setName: (name) => set({ name }),
 	setDescription: (description) => set({ description }),
 	setInviteCode: (code) => set({ inviteCode: code }),

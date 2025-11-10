@@ -39,8 +39,8 @@ export default function Confirmation() {
 
 	async function confirm() {
 		await trigger();
-		// TODO: Redirect to /reservations page once implemented
-		router.push("/");
+
+		router.push("/reservations");
 		booking.reset();
 
 		toast.success("Reservation created", { richColors: true });

@@ -12,7 +12,7 @@ const reservationSchema = createInsertSchema(reservations, {
 	endTime: z.iso.datetime(),
 });
 
-export async function GET() {
+export async function GET(request: NextRequest) {
 	const session = await auth.api.getSession({
 		headers: await headers(),
 	});
@@ -21,12 +21,24 @@ export async function GET() {
 		return Response.json({ message: "Unauthorized" }, { status: 401 });
 	}
 
-	const rows = await db
-		.select()
-		.from(reservations)
-		.where(eq(reservations.userId, session.user.id));
+	const userId = request.nextUrl.searchParams.get("userId");
 
-	return Response.json(rows);
+	if (userId) {
+		const rows = await db.query.reservations.findMany({
+			with: {
+				room: {
+					with: {
+						building: true,
+					},
+				},
+			},
+			where: eq(reservations.userId, userId),
+		});
+
+		return Response.json(rows);
+	}
+
+	return Response.json(db.select().from(reservations));
 }
 
 export async function POST(request: NextRequest) {

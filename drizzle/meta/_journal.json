@@ -43,6 +43,13 @@
       "when": 1761472105306,
       "tag": "0005_dashing_mentallo",
       "breakpoints": true
+    },
+    {
+      "idx": 6,
+      "version": "7",
+      "when": 1761627123916,
+      "tag": "0006_safe_siren",
+      "breakpoints": true
     }
   ]
 }

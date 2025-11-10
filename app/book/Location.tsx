@@ -1,10 +1,8 @@
-import type { Building, Room } from "@/lib/db/schema";
-import { Search } from "lucide-react";
+import type { FullRoom } from "@/lib/db/schema";
 import { useState } from "react";
 import useSWR from "swr";
 import Loading from "@/components/Loading";
 import Reservation from "@/components/Reservation";
-import { Input } from "@/components/ui/input";
 import {
 	Select,
 	SelectContent,
@@ -14,10 +12,6 @@ import {
 } from "@/components/ui/select";
 import { fetcher } from "@/lib/utils";
 import { useBooking } from "@/stores/booking";
-
-interface FullRoom extends Room {
-	building: Building;
-}
 
 function Intro() {
 	return (
@@ -35,13 +29,56 @@ function Intro() {
 }
 
 export default function Location() {
-	const [query, setQuery] = useState("");
 	const booking = useBooking();
+
+	const [buildingFilter, setBuildingFilter] = useState("all");
+	const [capacityFilter, setCapacityFilter] = useState("all");
 
 	const { data: rooms = [], isLoading } = useSWR<FullRoom[]>(
 		"/api/rooms",
 		fetcher,
 	);
+
+	const buildings = rooms
+		.map((room) => room.building)
+		.filter((building, index, self) => {
+			return index === self.findIndex((b) => b.id === building.id);
+		});
+
+	const filteredRooms = rooms.filter((room) => {
+		if (
+			buildingFilter !== "all" &&
+			room.building.id !== Number(buildingFilter)
+		) {
+			return false;
+		}
+
+		if (capacityFilter !== "all") {
+			const capacity = room.capacity ?? 0;
+
+			switch (capacityFilter) {
+				case "sm": {
+					if (capacity > 4) return false;
+					break;
+				}
+
+				case "md": {
+					if (capacity <= 4 || capacity > 10) return false;
+					break;
+				}
+
+				case "lg": {
+					if (capacity <= 10) return false;
+					break;
+				}
+
+				default:
+					break;
+			}
+		}
+
+		return true;
+	});
 
 	function selectRoom(room: FullRoom) {
 		booking.setLocation(room.building, {
@@ -66,45 +103,47 @@ export default function Location() {
 			<Intro />
 
 			<div className="flex flex-col gap-2 sm:flex-row">
-				<div className="relative w-full">
-					<Search className="text-muted-foreground absolute top-1/2 left-3 size-4 -translate-y-1/2 transform" />
-
-					<Input
-						className="pl-9"
-						value={query}
-						placeholder="Search rooms..."
-						onChange={(event) => setQuery(event.target.value)}
-					/>
-				</div>
-
-				<Select>
+				<Select
+					value={buildingFilter}
+					onValueChange={setBuildingFilter}
+				>
 					<SelectTrigger className="w-full sm:w-auto">
 						<SelectValue placeholder="Filter building" />
 					</SelectTrigger>
 
 					<SelectContent>
 						<SelectItem value="all">All buildings</SelectItem>
-						<SelectItem value="ugl">
-							Undergraduate Library
-						</SelectItem>
-						<SelectItem value="state-hall">State Hall</SelectItem>
-						<SelectItem value="stem">STEM Center</SelectItem>
+
+						{buildings.map((building) => (
+							<SelectItem
+								key={building.id}
+								value={building.id.toString()}
+							>
+								{building.name}
+							</SelectItem>
+						))}
 					</SelectContent>
 				</Select>
 
-				<Select>
+				<Select
+					value={capacityFilter}
+					onValueChange={setCapacityFilter}
+				>
 					<SelectTrigger className="w-full sm:w-auto">
-						<SelectValue placeholder="Filter size" />
+						<SelectValue placeholder="Filter capacity" />
 					</SelectTrigger>
 
 					<SelectContent>
 						<SelectItem value="all">All sizes</SelectItem>
+						<SelectItem value="sm">Small (1-4)</SelectItem>
+						<SelectItem value="md">Medium (4-10)</SelectItem>
+						<SelectItem value="lg">Large (10+)</SelectItem>
 					</SelectContent>
 				</Select>
 			</div>
 
 			<div className="grid-auto grid gap-4">
-				{rooms.map((room) => (
+				{filteredRooms.map((room) => (
 					<Reservation
 						key={room.id}
 						building={room.building}

@@ -1,4 +1,8 @@
-import type { Building, Room } from "@/lib/db/schema";
+import type {
+	Building,
+	Reservation as DbReservation,
+	Room,
+} from "@/lib/db/schema";
 import type { BookingStep } from "@/stores/booking";
 import dayjs from "dayjs";
 import { MapPin, UsersRound } from "lucide-react";
@@ -26,6 +30,7 @@ interface ReservationProps {
 	readonly?: boolean;
 	building: Building;
 	room: Room;
+	reservation?: DbReservation;
 	onSelect?: () => void;
 	onConfirm?: () => void;
 	onCancel?: () => void;
@@ -63,11 +68,20 @@ export default function Reservation({
 	readonly = false,
 	building,
 	room,
+	reservation,
 	onSelect,
 	onConfirm,
 	onCancel,
 }: ReservationProps) {
-	const { step, name, description, inviteCode, start, end } = useBooking();
+	let { step, name, description, inviteCode, start, end } = useBooking();
+
+	if (readonly && reservation) {
+		name = reservation.name;
+		description = reservation.description;
+		inviteCode = reservation.inviteCode;
+		start = reservation.startTime;
+		end = reservation.endTime;
+	}
 
 	const hasContent = name || description || inviteCode || start || end;
 	const inviteLink = `${location.origin}?invite=${inviteCode}`;
@@ -95,12 +109,14 @@ export default function Reservation({
 
 				<CardTitle>Room {room.number}</CardTitle>
 
-				<CardDescription className="mt-1">
+				<CardDescription className="mt-2">
 					<ul>
-						<li className="flex items-center">
-							<UsersRound className="mr-1 size-4" />
-							Accompanies up to {room.capacity} people
-						</li>
+						{room.capacity && (
+							<li className="flex items-center">
+								<UsersRound className="mr-1 size-4" />
+								Accompanies up to {room.capacity} people
+							</li>
+						)}
 					</ul>
 				</CardDescription>
 			</CardHeader>
@@ -126,7 +142,7 @@ export default function Reservation({
 					)}
 
 					{inviteCode && (
-						<div className="mt-6">
+						<div className="mt-4">
 							<span className="mb-1 inline-block text-sm font-medium">
 								Invite Link
 							</span>
